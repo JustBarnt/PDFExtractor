@@ -2,11 +2,15 @@
 import argparse
 import os
 
+
 # Import our relative package PDFExtractor
 from . import PDFExtractor
+from __enum__ import Output
 
 
 def main():
+    output = Output.Table
+
     description = "A simple Python CLI tool to read tables out of a PDF and export them to a spreadsheet"
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument("file", help="Path to the PDF to export tables out of.")
@@ -39,22 +43,36 @@ def main():
     args = parser.parse_args()
 
     if os.path.isfile(args.file) is False:
-        raise Exception(print(f"{args.file} is not a file."))
+        raise argparse.ArgumentError(None, "File give was not found.")
+
+    if args.output is None:
+        args.output = output
+    else:
+        if args.output in [Output.value for _ in Output]:
+            args.output = Output(args.output)
+        else:
+            raise argparse.ArgumentError(
+                None,
+                f"{args.output} is not a valid input. Must be {Output.Table} or {Output.Text}",
+            )
 
     if args.outfile is None:
         args.outfile = os.path.splitext(os.path.basename(args.file))[0]
 
-    if args.output is None:
-        args.output = "table"
-
-    if args.extension is None:
-        if args.output == "table":
-            args.extension = "csv"
-        elif args.output == "text":
-            args.extensions = "txt"
-        else:
+    if args.extension is None and args.output == Output.Table:
+        args.extension = "csv"
+    elif args.extension is None and args.output == Output.Text:
+        args.extension = "txt"
+    else:
+        if args.extension in ["csv", "xlsx"] and args.output != Output.Table:
             raise argparse.ArgumentError(
-                args.output, f"Output type: {args.output} is not supported"
+                None,
+                f"invalid extension: {args.extension}. when output is {args.output}",
+            )
+        elif args.extension == "txt" and args.output != Output.Text:
+            raise argparse.ArgumentError(
+                None,
+                f"invalid extension: {args.extension}. when output is {args.output}",
             )
 
     PDFExtractor.run(args.file, args.outfile, args.output, args.extension)
