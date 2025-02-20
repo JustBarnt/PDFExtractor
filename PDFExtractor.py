@@ -1,12 +1,13 @@
 __all__ = ["run"]
 
 from .helpers import PDFToTable as pdf_to_table, PDFToList as pdf_to_list
+from .enums import Output
 
 
 def run(path, outfile, output, extension):
-    if output == "table":
+    if output == Output.Table:
         _build_table(path, outfile, extension)
-    elif output == "list":
+    elif output == Output.Text:
         _build_list(path, outfile)
 
 

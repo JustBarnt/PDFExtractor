@@ -5,7 +5,7 @@ import os
 
 # Import our relative package PDFExtractor
 from . import PDFExtractor
-from __enum__ import Output
+from .enums import Output
 
 
 def main():
@@ -43,13 +43,13 @@ def main():
     args = parser.parse_args()
 
     if os.path.isfile(args.file) is False:
-        raise argparse.ArgumentError(None, "File give was not found.")
+        raise argparse.ArgumentError(None, "File given was not found.")
 
     if args.output is None:
         args.output = output
     else:
-        if args.output in [Output.value for _ in Output]:
-            args.output = Output(args.output)
+        if args.output.lower() in [o.value.lower() for o in Output]:
+            args.output = Output(args.output.title())
         else:
             raise argparse.ArgumentError(
                 None,
